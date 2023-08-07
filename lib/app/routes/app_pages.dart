@@ -12,7 +12,8 @@ part 'app_routes.dart';
 class AppPages {
   AppPages._();
 
-  static const INITIAL = Routes.FLASH_CHAT;
+  static const INITIALFLASH_CHAT = Routes.FLASH_CHAT;
+  static const INITIALHOME = Routes.HOME;
 
   static final routes = [
     GetPage(
@@ -29,7 +30,7 @@ class AppPages {
     ),
     GetPage(
       name: _Paths.LOGIN,
-      page: () => const LoginView(),
+      page: () => LoginView(Get.arguments as bool),
       binding: LoginBinding(),
     ),
     GetPage(
