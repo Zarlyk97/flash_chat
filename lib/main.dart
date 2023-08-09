@@ -15,9 +15,9 @@ void main() async {
   if (shouldUseFirebaseEmulator) {
     await FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
   }
-  final isAuth = await UserManager().init;
+  final isAuth = await userManager.init();
   runApp(
-    const MyApp(
+    MyApp(
       isAuth: isAuth,
     ),
   );

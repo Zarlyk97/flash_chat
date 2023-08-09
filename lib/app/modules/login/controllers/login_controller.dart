@@ -1,5 +1,6 @@
 import 'package:flash_chat1/app/modules/login/services/login_register_service.dart';
 import 'package:flash_chat1/app/routes/app_pages.dart';
+import 'package:flash_chat1/services/service_manager.dart';
 import 'package:flash_chat1/utils/app_shows.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
@@ -18,7 +19,9 @@ class LoginController extends GetxController {
           ? await LoginserVice.login(email.text, password.text)
           : await LoginserVice.register(email.text, password.text);
       Get.back();
+
       if (user != null) {
+        await userManager.setUid(user.user!.uid);
         await Get.offAllNamed(Routes.HOME);
       } else {
         AppShows.showDialog(
