@@ -1,6 +1,3 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'dart:js';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flash_chat1/app/data/sms_model.dart';
@@ -15,34 +12,32 @@ class HomeView extends GetView<HomeController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('⚡️Chat'),
-        centerTitle: true,
-        actions: [
-          PopupMenuButton(
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                child: const Text("Login out"),
-                onTap: () async => await controller.logout(),
-              ),
-              PopupMenuItem(
-                child: const Text("Delete"),
-                onTap: () async => await controller.delete(),
-              ),
-            ],
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          MessageStream(controller.streamMessage()),
-          SendContainer(
-            controller: controller.smscontroller,
-            onPressed: () async => controller.sendMessage(),
-          ),
-        ],
-      ),
-    );
+        appBar: AppBar(
+          title: const Text('⚡️Chat'),
+          actions: [
+            PopupMenuButton(
+                itemBuilder: (context) => [
+                      PopupMenuItem(
+                        child: const Text('Login out'),
+                        onTap: () async => await controller.logout(),
+                      ),
+                      PopupMenuItem(
+                        child: const Text('Delete'),
+                        onTap: () async => await controller.delete(),
+                      )
+                    ])
+          ],
+          centerTitle: true,
+        ),
+        body: Column(
+          children: [
+            MessageStream(controller.streamMessages()),
+            SendContainer(
+              controller: controller.smsController,
+              onPressed: () async => controller.sendMessage(),
+            ),
+          ],
+        ));
   }
 }
 
@@ -72,9 +67,9 @@ class SendContainer extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.only(left: 15),
               child: TextFormField(
-                controller: controller,
-                maxLines: 2,
                 minLines: 2,
+                maxLines: 5,
+                controller: controller,
               ),
             ),
           ),
@@ -89,53 +84,94 @@ class SendContainer extends StatelessWidget {
 }
 
 class MessageStream extends StatelessWidget {
-   MessageStream(
-    this.streamMessage, {
-    Key? key,
-  }) : super(key: key);
-  final Stream<QuerySnapshot<Map<String, dynamic>>> streamMessage;
+  const MessageStream(
+    this.streamMessages, {
+    super.key,
+  });
+  final Stream<QuerySnapshot<Map<String, dynamic>>> streamMessages;
+
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
-
+    final theme = Theme.of(context).colorScheme;
     return Expanded(
       child: Container(
         decoration: const BoxDecoration(
-          color: Colors.green,
-          gradient: LinearGradient(
-            colors: [
-              Colors.blue,
-              Colors.purple,
-              Colors.pink,
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
+            gradient: LinearGradient(
+          colors: [
+            Colors.blue,
+            Colors.purple,
+            Colors.pink,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        )),
         child: StreamBuilder<QuerySnapshot>(
-          stream: streamMessage,
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              // ignore: unnecessary_cast
-              final message = (snapshot.data!.docs.reversed as Iterable).map(
-                (e) => Message.fromMap(
-                  e.data(),
-                )..isMy = e.data()['sender'] ==
-                    FirebaseAuth.instance.currentUser?.email,
-              );
-              final widgets = message
-                  .map(
-                    (e) => Text(e.sms),
-                  )
-                  .toList();
-              return ListView(children: message.map((e) =>Padding(padding: EdgeInsets.fromLTRB(e.isMy? 10: width/3,width/ 7, e.isMy!  ? 9,width/ 7,),), ),);
-            } else {
-              return const Center(
-                child: CupertinoActivityIndicator(),
-              );
-            }
-          },
-        ),
+            stream: streamMessages,
+            builder: (contex, snapshot) {
+              if (snapshot.hasData) {
+                // ignore: unnecessary_cast
+                final message = (snapshot.data!.docs.reversed as Iterable).map(
+                    (e) => Message.fromMap(
+                          e.data(),
+                        )..isMy = e.data()['sender'] ==
+                            FirebaseAuth.instance.currentUser?.email);
+
+                return ListView(
+                  children: message
+                      .map(
+                        (e) => Padding(
+                          padding: EdgeInsets.fromLTRB(
+                            !e.isMy! ? 20 : width / 2,
+                            7,
+                            e.isMy! ? 20 : width / 2,
+                            7,
+                          ),
+                          child: Material(
+                            color: e.isMy!
+                                ? theme.primary
+                                : theme.onPrimaryContainer,
+                            clipBehavior: Clip.none,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.only(
+                                bottomLeft: Radius.circular(10),
+                                bottomRight: Radius.circular(10),
+                                topLeft: !e.isMy!
+                                    ? Radius.circular(0)
+                                    : Radius.circular(0),
+                                topRight: !e.isMy!
+                                    ? Radius.circular(10)
+                                    : Radius.circular(15),
+                              ),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  !e.isMy!
+                                      ? Row(
+                                          children: [
+                                            Text(e.sender),
+                                          ],
+                                        )
+                                      : const SizedBox.shrink(),
+                                  Text(e.sms),
+                                  Text(e.dateTime.toString()),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      )
+                      .toList(),
+                );
+              } else {
+                return const Center(
+                  child: CupertinoActivityIndicator(),
+                );
+              }
+            }),
       ),
     );
   }

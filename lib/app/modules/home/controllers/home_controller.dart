@@ -2,31 +2,33 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flash_chat1/app/modules/home/service/home_service.dart';
 import 'package:flash_chat1/app/routes/app_pages.dart';
 import 'package:flash_chat1/utils/app_shows.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 
 class HomeController extends GetxController {
-  final smscontroller = TextEditingController();
+  final smsController = TextEditingController();
   Future<void> logout() async {
     AppShows.showIndicator();
     await HomeService.logout();
-    await Get.offAndToNamed(Routes.FLASH_CHAT);
+    await Get.offAllNamed(Routes.FLASH_CHAT);
   }
 
   Future<void> delete() async {
     AppShows.showIndicator();
     await HomeService.delete();
-    await Get.offAndToNamed(Routes.FLASH_CHAT);
+    await Get.offAllNamed(Routes.FLASH_CHAT);
   }
 
   Future<void> sendMessage() async {
-    final sms = smscontroller.text.trim();
+    final sms = smsController.text.trim();
+    smsController.text = '';
     print(sms);
-    if (sms != '') ;
-    await HomeService.sendMessage(sms);
+    if (sms != '') {
+      await HomeService.sendMessage(sms);
+    }
   }
 
-  Stream<QuerySnapshot<Map<String, dynamic>>> streamMessage() {
+  Stream<QuerySnapshot<Map<String, dynamic>>> streamMessages() {
     return HomeService.streamMessage();
   }
 }
